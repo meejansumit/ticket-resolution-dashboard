@@ -5,6 +5,8 @@ const { exec } = require('child_process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trigger fresh Vercel build to apply BLOB_READ_WRITE_TOKEN
+
 // Support parsing text bodies containing JSON
 app.use(express.text({ type: 'application/json', limit: '10mb' }));
 
