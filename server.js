@@ -54,6 +54,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
+// Error handling middleware to return JSON for all upload/server errors
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  let errMsg = err.message || 'Internal Server Error';
+  if (errMsg.includes('EBUSY') || errMsg.includes('UNKNOWN') || errMsg.includes('KPI Ticket Resolution.xlsx')) {
+    errMsg = 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง';
+  }
+  res.status(500).json({ error: errMsg });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Open http://localhost:${PORT} in your browser`);
