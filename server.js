@@ -56,12 +56,12 @@ app.post('/api/upload', (req, res) => {
   }
 });
 
-// Serve static files from the 'dist' directory
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve static files from the root directory
+app.use(express.static(__dirname));
 
 // Fallback all routes to index.html for SPA behavior
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Error handling middleware

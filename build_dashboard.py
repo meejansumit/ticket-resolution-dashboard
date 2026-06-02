@@ -9,8 +9,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE = os.path.join(HERE, "dashboard_template.html")
 DATA     = os.path.join(HERE, "all_months.json")
 OUT      = os.path.join(HERE, "dashboard.html")
-OUT_DIST_DIR = os.path.join(HERE, "dist")
-OUT_DIST     = os.path.join(OUT_DIST_DIR, "index.html")
+OUT_INDEX = os.path.join(HERE, "index.html")
 
 with open(DATA, "r", encoding="utf-8") as f:
     raw = json.load(f)
@@ -26,17 +25,14 @@ if "__RAW_DATA__" not in html:
 
 html = html.replace("__RAW_DATA__", data_js)
 
-# สร้างโฟลเดอร์ dist หากยังไม่มี
-os.makedirs(OUT_DIST_DIR, exist_ok=True)
-
 with open(OUT, "w", encoding="utf-8") as f:
     f.write(html)
 
-with open(OUT_DIST, "w", encoding="utf-8") as f:
+with open(OUT_INDEX, "w", encoding="utf-8") as f:
     f.write(html)
 
 print(f"[Built Local]  -> {OUT}")
-print(f"[Built Deploy] -> {OUT_DIST}")
+print(f"[Built Root]   -> {OUT_INDEX}")
 print(f"  Size: {len(html):,} bytes")
 print(f"  Months: {raw['sheetOrder']}")
 print(f"\nOpen file:  start {OUT}")
