@@ -3134,8 +3134,14 @@ if (uploadBtn && fileInput) {
           window.location.reload();
         }, 1500);
       } else {
-        const data = await res.json();
-        alert('Failed to upload: ' + (data.error || 'Unknown error'));
+        let errMsg = 'Unknown error';
+        try {
+          const data = await res.json();
+          errMsg = data.error || errMsg;
+        } catch (jsonErr) {
+          errMsg = `Server Error (${res.status})`;
+        }
+        alert('Failed to upload: ' + errMsg);
         span.textContent = originalText;
         uploadBtn.disabled = false;
         fileInput.value = '';
