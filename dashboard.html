@@ -867,9 +867,9 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); color: var(--txt); }
       </button>
       <button class="btn-export" id="uploadExcelBtn" style="display:none; background: linear-gradient(135deg, rgba(0,242,254,0.1) 0%, rgba(189,0,255,0.1) 100%); border-color: rgba(0,242,254,0.3);">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block; stroke: #00f2fe;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        <span style="color: #00f2fe;">Upload Excel</span>
+        <span style="color: #00f2fe;">Upload JSON</span>
       </button>
-      <input type="file" id="excelFileInput" accept=".xlsx" style="display:none;" />
+      <input type="file" id="excelFileInput" accept=".json" style="display:none;" />
       <div class="live-pill"><span class="live-dot"></span>Connected</div>
       <div class="clock" id="clock">--:--</div>
     </div>
@@ -3143,50 +3143,61 @@ if (uploadBtn && fileInput) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.xlsx')) {
-      alert('กรุณาอัปโหลดไฟล์ Excel (.xlsx) เท่านั้น');
+    if (!file.name.endsWith('.json')) {
+      alert('กรุณาอัปโหลดไฟล์ JSON (.json) เท่านั้น');
       fileInput.value = '';
       return;
     }
-
-    const formData = new FormData();
-    formData.append('excelFile', file);
 
     const span = uploadBtn.querySelector('span');
     const originalText = span.textContent;
     span.textContent = 'Processing...';
     uploadBtn.disabled = true;
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const jsonText = evt.target.result;
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: jsonText
+        });
 
-      if (res.ok) {
-        span.textContent = 'Success! Reloading...';
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        let errMsg = 'Unknown error';
-        try {
-          const data = await res.json();
-          errMsg = data.error || errMsg;
-        } catch (jsonErr) {
-          errMsg = `Server Error (${res.status})`;
+        if (res.ok) {
+          span.textContent = 'Success! Reloading...';
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          let errMsg = 'Unknown error';
+          try {
+            const data = await res.json();
+            errMsg = data.error || errMsg;
+          } catch (jsonErr) {
+            errMsg = `Server Error (${res.status})`;
+          }
+          alert('Failed to upload: ' + errMsg);
+          span.textContent = originalText;
+          uploadBtn.disabled = false;
+          fileInput.value = '';
         }
-        alert('Failed to upload: ' + errMsg);
+      } catch (err) {
+        alert('Connection error: ' + err.message);
         span.textContent = originalText;
         uploadBtn.disabled = false;
         fileInput.value = '';
       }
-    } catch (err) {
-      alert('Connection error: ' + err.message);
+    };
+    reader.onerror = () => {
+      alert('Failed to read file');
       span.textContent = originalText;
       uploadBtn.disabled = false;
       fileInput.value = '';
-    }
+    };
+    reader.readAsText(file);
   });
 }
 </script>
