@@ -1,12 +1,12 @@
-import { put } from '@vercel/blob';
+const { put } = require('@vercel/blob');
 
-export const config = {
+const config = {
   api: {
     bodyParser: false, // Disable body parser to read raw request stream directly
   },
 };
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
     console.log('JSON structure verified. Uploading to Vercel Blob...');
 
-    // Upload JSON directly to Vercel Blob (it adds suffix by default for cache-busting, which is handled by list logic in data.js)
+    // Upload JSON directly to Vercel Blob
     const blob = await put('all_months.json', jsonText, {
       access: 'public',
       contentType: 'application/json',
@@ -58,3 +58,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
+
+module.exports = handler;
+module.exports.config = config;
