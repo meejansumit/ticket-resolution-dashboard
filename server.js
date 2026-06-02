@@ -27,31 +27,41 @@ app.post('/api/upload', upload.single('excelFile'), (req, res) => {
   const tempPath = path.join(__dirname, 'KPI Ticket Resolution_upload.xlsx');
   const targetPath = path.join(__dirname, 'KPI Ticket Resolution.xlsx');
 
-  console.log('Received Excel file. Attempting to update database...');
+  console.log('Received Excel file. Verifying file structure and data...');
 
-  // Try to copy the uploaded temp file over the target file
-  fs.copyFile(tempPath, targetPath, (copyErr) => {
-    // Clean up the temp file in either case
-    fs.unlink(tempPath, () => {});
-
-    if (copyErr) {
-      console.error('Copy error (likely file locked by Excel):', copyErr);
-      return res.status(500).json({ 
-        error: 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง' 
-      });
+  // Step 1: Run export_all_months.py against the uploaded temporary file FIRST to verify it is valid
+  exec('python export_all_months.py "KPI Ticket Resolution_upload.xlsx"', (err, stdout, stderr) => {
+    if (err) {
+      console.error('Validation failed (likely corrupted or wrong format):', err);
+      // Clean up the temp file
+      fs.unlink(tempPath, () => {});
+      
+      let errMsg = err.message;
+      if (errMsg.includes('BadZipFile') || errMsg.includes('not a zip file')) {
+        errMsg = 'ไฟล์ Excel ที่อัปโหลดไม่สมบูรณ์หรือเสียหาย (Bad Zip File) กรุณาตรวจสอบไฟล์ของคุณและลองอัปโหลดอีกครั้ง';
+      } else {
+        errMsg = 'โครงสร้างไฟล์ไม่ถูกต้อง: ' + (stderr || err.message);
+      }
+      return res.status(500).json({ error: errMsg });
     }
 
-    console.log('File successfully updated. Running rebuild process...');
+    console.log('Validation successful. Overwriting main Excel file...');
 
-    // Step 1: Export raw data from Excel to JSON
-    exec('python export_all_months.py', (err, stdout, stderr) => {
-      if (err) {
-        console.error('Error running export_all_months.py:', err);
-        return res.status(500).json({ error: 'Failed to process Excel data: ' + err.message });
+    // Step 2: Overwrite the main Excel file with the valid temporary file
+    fs.copyFile(tempPath, targetPath, (copyErr) => {
+      // Clean up the temp file
+      fs.unlink(tempPath, () => {});
+
+      if (copyErr) {
+        console.error('Copy error (likely file locked by Excel):', copyErr);
+        return res.status(500).json({ 
+          error: 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง' 
+        });
       }
-      console.log('export_all_months.py output:', stdout);
 
-      // Step 2: Build HTML dashboard from template + JSON
+      console.log('File successfully updated. Running rebuild process...');
+
+      // Step 3: Build HTML dashboard from the generated JSON
       exec('python build_dashboard.py', (err2, stdout2, stderr2) => {
         if (err2) {
           console.error('Error running build_dashboard.py:', err2);

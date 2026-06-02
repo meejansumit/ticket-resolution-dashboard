@@ -4,12 +4,12 @@ Export ทุก sheet ที่เป็นข้อมูลดิบใน KP
 รัน:  python export_all_months.py
 ผลลัพธ์:  all_months.json
 """
-import json, os, statistics
+import json, os, statistics, sys
 from openpyxl import load_workbook
 from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-XLSX = os.path.join(HERE, "KPI Ticket Resolution.xlsx")
+XLSX = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "KPI Ticket Resolution.xlsx")
 OUT  = os.path.join(HERE, "all_months.json")
 
 REQUIRED_BASE = {"TeamOwner", "TicketOwner", "ResolutionTime", "FirstResponseTime"}
