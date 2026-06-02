@@ -1,78 +1,59 @@
 const express = require('express');
 const path = require('path');
-const multer = require('multer');
 const fs = require('fs');
 const { exec } = require('child_process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Setup multer storage to write to a temporary file first (to prevent request aborts if target file is locked)
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, __dirname);
-  },
-  filename: function (req, file, cb) {
-    cb(null, 'KPI Ticket Resolution_upload.xlsx');
+// Support parsing text bodies containing JSON
+app.use(express.text({ type: 'application/json', limit: '10mb' }));
+
+// GET route to fetch the local JSON data (similar to Vercel api/data.js)
+app.get('/api/data', (req, res) => {
+  const localPath = path.join(__dirname, 'all_months.json');
+  if (fs.existsSync(localPath)) {
+    try {
+      const data = fs.readFileSync(localPath, 'utf-8');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.status(200).send(data);
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to read local data' });
+    }
   }
+  return res.status(404).json({ error: 'No data found' });
 });
 
-const upload = multer({ storage: storage });
-
-// POST route for file upload and automatic rebuild
-app.post('/api/upload', upload.single('excelFile'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Please upload an Excel file.' });
+// POST route for raw JSON upload (similar to Vercel api/upload.js)
+app.post('/api/upload', (req, res) => {
+  const jsonText = req.body;
+  if (!jsonText || typeof jsonText !== 'string') {
+    return res.status(400).json({ error: 'Empty payload or invalid content-type' });
   }
 
-  const tempPath = path.join(__dirname, 'KPI Ticket Resolution_upload.xlsx');
-  const targetPath = path.join(__dirname, 'KPI Ticket Resolution.xlsx');
-
-  console.log('Received Excel file. Verifying file structure and data...');
-
-  // Step 1: Run export_all_months.py against the uploaded temporary file FIRST to verify it is valid
-  exec('python export_all_months.py "KPI Ticket Resolution_upload.xlsx"', (err, stdout, stderr) => {
-    if (err) {
-      console.error('Validation failed (likely corrupted or wrong format):', err);
-      // Clean up the temp file
-      fs.unlink(tempPath, () => {});
-      
-      let errMsg = err.message;
-      if (errMsg.includes('BadZipFile') || errMsg.includes('not a zip file')) {
-        errMsg = 'ไฟล์ Excel ที่อัปโหลดไม่สมบูรณ์หรือเสียหาย (Bad Zip File) กรุณาตรวจสอบไฟล์ของคุณและลองอัปโหลดอีกครั้ง';
-      } else {
-        errMsg = 'โครงสร้างไฟล์ไม่ถูกต้อง: ' + (stderr || err.message);
-      }
-      return res.status(500).json({ error: errMsg });
+  try {
+    const parsedData = JSON.parse(jsonText);
+    if (!parsedData.months || !parsedData.sheetOrder) {
+      return res.status(400).json({ error: 'โครงสร้างไฟล์ JSON ไม่ถูกต้อง (ต้องมีคีย์ months และ sheetOrder)' });
     }
 
-    console.log('Validation successful. Overwriting main Excel file...');
+    const localPath = path.join(__dirname, 'all_months.json');
+    fs.writeFileSync(localPath, jsonText, 'utf-8');
+    console.log('Successfully updated local all_months.json');
 
-    // Step 2: Overwrite the main Excel file with the valid temporary file
-    fs.copyFile(tempPath, targetPath, (copyErr) => {
-      // Clean up the temp file
-      fs.unlink(tempPath, () => {});
-
-      if (copyErr) {
-        console.error('Copy error (likely file locked by Excel):', copyErr);
-        return res.status(500).json({ 
-          error: 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง' 
-        });
+    // Run build_dashboard.py to update local HTML files
+    exec('python build_dashboard.py', (err, stdout, stderr) => {
+      if (err) {
+        console.error('Error rebuilding dashboard locally:', err);
+      } else {
+        console.log('Local rebuild output:', stdout.trim());
       }
-
-      console.log('File successfully updated. Running rebuild process...');
-
-      // Step 3: Build HTML dashboard from the generated JSON
-      exec('python build_dashboard.py', (err2, stdout2, stderr2) => {
-        if (err2) {
-          console.error('Error running build_dashboard.py:', err2);
-          return res.status(500).json({ error: 'Failed to rebuild dashboard: ' + err2.message });
-        }
-        console.log('build_dashboard.py output:', stdout2);
-        
-        res.json({ success: true, message: 'Dashboard updated successfully!' });
-      });
     });
-  });
+
+    return res.json({ success: true, message: 'Dashboard updated successfully!' });
+  } catch (error) {
+    console.error('Error processing JSON upload:', error);
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
 });
 
 // Serve static files from the 'dist' directory
@@ -83,14 +64,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Error handling middleware to return JSON for all upload/server errors
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  let errMsg = err.message || 'Internal Server Error';
-  if (errMsg.includes('EBUSY') || errMsg.includes('UNKNOWN') || errMsg.includes('KPI Ticket Resolution.xlsx')) {
-    errMsg = 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง';
-  }
-  res.status(500).json({ error: errMsg });
+  res.status(500).json({ error: err.message || 'Internal Server Error' });
 });
 
 app.listen(PORT, () => {
