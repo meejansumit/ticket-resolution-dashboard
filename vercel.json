@@ -2,8 +2,7 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/data", "destination": "api/data.js" },
-    { "source": "/api/upload", "destination": "api/upload.js" },
-    { "source": "/(.*)", "destination": "dist/$1" }
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/:path*", "destination": "/dist/:path*" }
   ]
 }
