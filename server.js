@@ -29,14 +29,13 @@ app.post('/api/upload', upload.single('excelFile'), (req, res) => {
 
   console.log('Received Excel file. Attempting to update database...');
 
-  // Try to rename the uploaded temp file to the target name
-  fs.rename(tempPath, targetPath, (renameErr) => {
-    if (renameErr) {
-      console.error('Rename error (likely file locked by Excel):', renameErr);
-      
-      // Clean up the temp file
-      fs.unlink(tempPath, () => {});
-      
+  // Try to copy the uploaded temp file over the target file
+  fs.copyFile(tempPath, targetPath, (copyErr) => {
+    // Clean up the temp file in either case
+    fs.unlink(tempPath, () => {});
+
+    if (copyErr) {
+      console.error('Copy error (likely file locked by Excel):', copyErr);
       return res.status(500).json({ 
         error: 'ไม่สามารถเขียนทับไฟล์ได้ เนื่องจากไฟล์ "KPI Ticket Resolution.xlsx" กำลังเปิดใช้งานอยู่ในโปรแกรมอื่น (เช่น Microsoft Excel) กรุณาปิดโปรแกรมดังกล่าวก่อนทำการอัปโหลดอีกครั้ง' 
       });
