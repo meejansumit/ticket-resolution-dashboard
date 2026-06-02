@@ -1128,10 +1128,15 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); color: var(--txt); }
 </div>
 
 <script>
-const RAW = __RAW_DATA__;
-const SHEET_ORDER = RAW.sheetOrder;
-const MONTHS = RAW.months;
-const AI_WORKFORCE = RAW.aiWorkforce || [];
+let RAW;
+try {
+  RAW = __RAW_DATA__;
+} catch (e) {
+  RAW = null;
+}
+let SHEET_ORDER = [];
+let MONTHS = {};
+let AI_WORKFORCE = [];
 const PALETTE = ['#00f2fe', '#bd00ff', '#ff007a', '#fbbf24', '#10b981', '#3b82f6', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6'];
 const FONT = "'Inter','IBM Plex Sans Thai',system-ui,sans-serif";
 
@@ -3076,25 +3081,55 @@ document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('c
   updateTabStates();
   renderActive();
 }));
-setupMonth();
-setupTeamFilter();
-recomputeFilteredData();
-setupParentFilter();
-setupPivot();
-updateExportButtonVisibility();
-updateFooter();
-setTimeout(() => { moveSegment(); moveTab(); }, 60);
-window.addEventListener('resize', () => { moveSegment(); moveTab(); });
-updateTabStates();
-renderActive();
+async function startDashboard() {
+  if (window.location.protocol.startsWith('http')) {
+    try {
+      const res = await fetch('/api/data');
+      if (res.ok) {
+        const freshData = await res.json();
+        if (freshData && freshData.sheetOrder && freshData.months) {
+          RAW = freshData;
+          console.log('Loaded fresh data from Vercel API');
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load fresh data from API, using baked-in fallback:', err);
+    }
+  }
 
-// Show upload button if served via HTTP/HTTPS
-if (window.location.protocol.startsWith('http')) {
-  const uploadBtn = document.getElementById('uploadExcelBtn');
-  if (uploadBtn) {
-    uploadBtn.style.display = 'inline-flex';
+  if (!RAW) {
+    console.error('No dashboard data found!');
+    document.body.innerHTML = '<div style="color:red; text-align:center; padding:50px; font-family:sans-serif;">Error: Dashboard data is empty or invalid.</div>';
+    return;
+  }
+
+  SHEET_ORDER = RAW.sheetOrder || [];
+  MONTHS = RAW.months || {};
+  AI_WORKFORCE = RAW.aiWorkforce || [];
+  state.month = SHEET_ORDER[SHEET_ORDER.length - 1] || '';
+
+  setupMonth();
+  setupTeamFilter();
+  recomputeFilteredData();
+  setupParentFilter();
+  setupPivot();
+  updateExportButtonVisibility();
+  updateFooter();
+  setTimeout(() => { moveSegment(); moveTab(); }, 60);
+  window.addEventListener('resize', () => { moveSegment(); moveTab(); });
+  updateTabStates();
+  renderActive();
+
+  // Show upload button if served via HTTP/HTTPS
+  if (window.location.protocol.startsWith('http')) {
+    const uploadBtn = document.getElementById('uploadExcelBtn');
+    if (uploadBtn) {
+      uploadBtn.style.display = 'inline-flex';
+    }
   }
 }
+
+startDashboard();
 
 const uploadBtn = document.getElementById('uploadExcelBtn');
 const fileInput = document.getElementById('excelFileInput');

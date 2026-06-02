@@ -9,3 +9,5 @@ KPI Ticket Resolution.xlsx
 *.tmp
 .DS_Store
 Thumbs.db
+__pycache__/
+*.pyc
