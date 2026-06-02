@@ -1,0 +1,194 @@
+{
+  "March2026": {
+    "headers": [
+      "TeamOwner",
+      "TicketOwner",
+      "Subject",
+      "DateCreated",
+      "DateCompleted",
+      "TicketId",
+      "Category",
+      "SubCatagory",
+      "DateCommented",
+      "DateRequired",
+      "ResolutionTime",
+      "FirstResponseTime",
+      "DateRequiredRang"
+    ],
+    "sample_rows": [
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "Web TKS - แจ้ง Update ข้อมูลงบการเงิน บนหน้าเว็บไซต์ ",
+        "2026-03-25 16:02:39.965000",
+        "2026-03-25 16:22:24.793000",
+        "526023",
+        "NULL",
+        "NULL",
+        "NULL",
+        "2026-03-26 16:00:00",
+        "0",
+        "64",
+        "1"
+      ],
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "Web site > นโยบายการจัดซื้อจัดจ้างอย่างยั่งยืน TKS",
+        "2026-03-16 09:39:18.489000",
+        "2026-03-16 10:35:27.741000",
+        "524820",
+        "NULL",
+        "NULL",
+        "NULL",
+        "2026-03-17 16:00:00",
+        "0",
+        "73",
+        "1"
+      ],
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "ลง PR ข่าว",
+        "2026-03-23 20:10:44.764000",
+        "2026-03-24 10:30:57.310000",
+        "525949",
+        "NULL",
+        "NULL",
+        "NULL",
+        "2026-03-25 16:00:00",
+        "1",
+        "66",
+        "2"
+      ]
+    ]
+  },
+  "April 2026": {
+    "headers": [
+      "TeamOwner",
+      "TicketOwner",
+      "Subject",
+      "DateCreated",
+      "DateCompleted",
+      "TicketId",
+      "Category",
+      "SubCatagory",
+      "DateCommented",
+      "DateRequired",
+      "ResolutionTime",
+      "FirstResponseTime",
+      "SLAGap"
+    ],
+    "sample_rows": [
+      [
+        "IT Infrastructure",
+        "ramwathin.s@gofive.co.th",
+        "สั่งหัวอ่านสแกนเนอร์",
+        "2025-12-10 10:10:39.049000",
+        "2026-04-24 15:01:04.420000",
+        "401355",
+        "Hardware",
+        "Repair / Modify",
+        "NULL",
+        "2026-04-24 17:00:00",
+        "135",
+        "169",
+        "135"
+      ],
+      [
+        "IT Infrastructure",
+        "ramwathin.s@gofive.co.th",
+        "โปรแกรมคำนวณราคาใช้ไม่ได้ค่ะ ",
+        "2026-01-20 11:41:00.850000",
+        "2026-04-22 17:18:16.126000",
+        "462065",
+        "Software",
+        "Install / Uninstall",
+        "NULL",
+        "2026-04-22 17:00:00",
+        "92",
+        "128",
+        "92"
+      ],
+      [
+        "IT Infrastructure",
+        "ramwathin.s@gofive.co.th",
+        "โปรแกรมคำนวณราคาใช้ไม่ได้ค่ะ ",
+        "2026-01-20 11:41:00.850000",
+        "2026-04-22 17:16:45.542000",
+        "462064",
+        "Software",
+        "Install / Uninstall",
+        "NULL",
+        "2026-04-22 18:00:00",
+        "92",
+        "128",
+        "92"
+      ]
+    ]
+  },
+  "May 2026": {
+    "headers": [
+      "TeamOwner",
+      "TicketOwner",
+      "Subject",
+      "DateCreated",
+      "DateCompleted",
+      "TicketId",
+      "Category",
+      "SubCatagory",
+      "DateCommented",
+      "DateRequired",
+      "ResolutionTime",
+      "FirstResponseTime",
+      "SLAGap"
+    ],
+    "sample_rows": [
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "ฝากนำไฟล์ รายงานการประชุมสามัญผู้ถือหุ้นประจำปี 2569 ฉบับภาษาไทย และ ฉบับภาษาอังกฤษ ",
+        "2026-05-06 16:37:21.423000",
+        "2026-05-06 16:44:29.077000",
+        "527772",
+        "NULL",
+        "NULL",
+        "2026-05-06 16:43:56.927000",
+        "2026-05-07 16:00:00",
+        "0",
+        "0",
+        "1"
+      ],
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "PR บน website",
+        "2026-05-26 08:36:33.681000",
+        "2026-05-26 09:38:28.275000",
+        "529976",
+        "NULL",
+        "NULL",
+        "2026-05-26 09:38:13.376000",
+        "2026-05-27 16:00:00",
+        "0",
+        "0",
+        "1"
+      ],
+      [
+        "Information Technology",
+        "yuwanida.c@gofive.co.th",
+        "ฝากนำไฟล์ รายงานการประชุมสามัญผู้ถือหุ้นประจำปี 2569 ฉบับภาษาอังกฤษ",
+        "2026-05-06 17:23:57.458000",
+        "2026-05-06 17:32:46.904000",
+        "527775",
+        "NULL",
+        "NULL",
+        "2026-05-06 17:32:36.472000",
+        "2026-05-07 16:00:00",
+        "0",
+        "0",
+        "1"
+      ]
+    ]
+  }
+}

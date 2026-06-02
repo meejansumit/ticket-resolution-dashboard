@@ -1,0 +1,11 @@
+# Dependency directories
+node_modules/
+
+# Excel source files (contains sensitive information)
+KPI Ticket Resolution.xlsx
+
+# Backups and temporary files
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
